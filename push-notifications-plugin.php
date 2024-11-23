@@ -154,3 +154,12 @@ function send_fcm_push_notification($fcm_token, $message) {
         error_log('Successfully wrote to log file: ' . $log_file);
     }
 }
+
+// Store FCM token upon user login
+function store_fcm_token_on_login($user_login, $user) {
+    if (isset($_POST['fcm_token']) && !empty($_POST['fcm_token'])) {
+        $fcm_token = sanitize_text_field($_POST['fcm_token']);
+        update_user_meta($user->ID, '_fcm_token', $fcm_token);
+    }
+}
+add_action('wp_login', 'store_fcm_token_on_login', 10, 2);
