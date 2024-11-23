@@ -47,3 +47,6 @@ NWooApp is a powerful WordPress plugin designed to transform your WordPress site
     "topics": ["new-arrivals", "promotions"],
     "external_links": ["https://example.com/link1", "https://example.com/link2"]
   }
+
+# Watch the features in the image
+<img src="images/image.png">
