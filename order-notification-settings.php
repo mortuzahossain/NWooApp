@@ -8,27 +8,32 @@ $default_messages = [
         'enabled' => true,
         'message' => 'Your order [order_id] is now processing.'
     ],
-    'on_hold' => [
-        'enabled' => false,
-        'message' => 'Custom message for On hold.'
+    'on-hold' => [
+        'enabled' => true,
+        'message' => 'Your order #[order_id] On hold.'
+    ],
+    'pending' => [
+        'enabled' => true,
+        'message' => 'Your order #[order_id] On pending.'
     ],
     'completed' => [
         'enabled' => true,
         'message' => 'Your #[order_id] is now completed!'
     ],
     'cancelled' => [
-        'enabled' => false,
-        'message' => 'Custom message for Cancelled.'
+        'enabled' => true,
+        'message' => 'Your order #[order_id] is Cancelled.'
     ],
     'refunded' => [
-        'enabled' => false,
-        'message' => 'Custom message for Refunded.'
+        'enabled' => true,
+        'message' => 'Your order #[order_id] is Refunded.'
     ],
     'failed' => [
-        'enabled' => false,
-        'message' => 'Custom message for Failed.'
+        'enabled' => true,
+        'message' => 'Your order #[order_id] is Failed.'
     ],
 ];
+
 
 // Load messages from the file or use default
 if (file_exists($file_path)) {
@@ -82,18 +87,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['on_save_notifications
                         </th>
                         <td>
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <input 
-                                    type="checkbox" 
-                                    name="notification_messages[<?php echo esc_attr($status); ?>][enabled]" 
-                                    value="1" 
-                                    <?php checked(!empty($data['enabled'])); ?> 
+                                <input
+                                    type="checkbox"
+                                    name="notification_messages[<?php echo esc_attr($status); ?>][enabled]"
+                                    value="1"
+                                    <?php checked(!empty($data['enabled'])); ?>
                                 />
-                                <input 
-                                    type="text" 
-                                    id="message-<?php echo esc_attr($status); ?>" 
-                                    name="notification_messages[<?php echo esc_attr($status); ?>][message]" 
-                                    value="<?php echo esc_attr($data['message']); ?>" 
-                                    style="flex: 1;" 
+                                <input
+                                    type="text"
+                                    id="message-<?php echo esc_attr($status); ?>"
+                                    name="notification_messages[<?php echo esc_attr($status); ?>][message]"
+                                    value="<?php echo esc_attr($data['message']); ?>"
+                                    style="flex: 1;"
                                 />
                             </div>
                         </td>

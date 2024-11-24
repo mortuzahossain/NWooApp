@@ -1,5 +1,4 @@
 <?php
-// Handle topic addition
 if (isset($_POST['add_topic']) && !empty($_POST['topic_name'])) {
     $new_topic = sanitize_text_field($_POST['topic_name']);
     $saved_topics = get_option('push_notification_topics', []);
@@ -26,14 +25,32 @@ if (isset($_POST['send_notification'])) {
     $notification_topic = sanitize_text_field($_POST['notification_topic']);
     $notification_title = sanitize_text_field($_POST['notification_title']);
     $notification_message = sanitize_textarea_field($_POST['notification_message']);
-    // Add API call or functionality to send notifications here
-     // Mock sending notification (replace with actual logic or API call)
-    if (!empty($notification_topic) && !empty($notification_title) && !empty($notification_message)) {
-        // Simulate successful notification
-        $_SESSION['notification_message'] = "Notification sent successfully to topic: " . esc_html($notification_topic) . ".";
-        $_SESSION['notification_status'] = "success";
+    $file_path = CUSTOM_PLUGIN_DIR . 'uploads/uploaded.json';
+    if (!file_exists($file_path)){
+        $_SESSION['notification_message'] = "Please complete the setting first and upload service_account.json file";
+        $_SESSION['notification_status'] = "error";
+    }
+    else if (!empty($notification_topic) && !empty($notification_title) && !empty($notification_message)) {
+
+        $body = array(
+     			'message' => array(
+    				'topic' => $notification_topic,
+    				'notification' => array(
+   					'title' => $notification_title,
+   					'body' => $notification_message
+    				),
+    				'data' => array(
+   					'title' => $notification_title,
+   					'body' => $notification_message
+    				),
+     			),
+  		);
+
+        if(sendFirebaseNotification($body)){
+			$_SESSION['notification_message'] = "Notification sent successfully to topic:" . esc_html($notification_topic);
+            $_SESSION['notification_status'] = "success";
+        }
     } else {
-        // Simulate failure
         $_SESSION['notification_message'] = "Failed to send notification. Please check your input.";
         $_SESSION['notification_status'] = "error";
     }
@@ -67,9 +84,9 @@ $saved_topics = get_option('push_notification_topics', []);
                             <label for="notification_topic">Select Topic</label>
                         </th>
                         <td>
-                            <select name="notification_topic" id="notification_topic" class="regular-text" required>
+                            <select name="notification_topic" id="notification_topic" class="regular-text"  >
                                 <option value="">-- Select Topic --</option>
-                                <option value="/all">All</option>
+                                <option value="all">All</option>
                                 <?php foreach ($saved_topics as $topic) : ?>
                                     <option value="<?php echo esc_attr($topic); ?>"><?php echo esc_html($topic); ?></option>
                                 <?php endforeach; ?>
@@ -81,7 +98,7 @@ $saved_topics = get_option('push_notification_topics', []);
                             <label for="notification_title">Notification Title</label>
                         </th>
                         <td>
-                            <input type="text" name="notification_title" id="notification_title" class="regular-text"  placeholder="Enter notification title" required>
+                            <input type="text" name="notification_title" id="notification_title" class="regular-text"  placeholder="Enter notification title"  >
                         </td>
                     </tr>
                     <tr>
@@ -89,7 +106,7 @@ $saved_topics = get_option('push_notification_topics', []);
                             <label for="notification_message">Notification Message</label>
                         </th>
                         <td>
-                            <textarea name="notification_message" id="notification_message" class="large-text" rows="5" placeholder="Enter notification message" required></textarea>
+                            <textarea name="notification_message" id="notification_message" class="large-text" rows="5" placeholder="Enter notification message"  ></textarea>
                         </td>
                     </tr>
                 </table>
