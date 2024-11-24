@@ -86,9 +86,9 @@ function send_fcm_push_notification($fcm_token, $message) {
             ),
         ),
     );
-logMe($body);
+// logMe($body);
     $response = sendFirebaseNotification($body);
-logMe($response);
+// logMe($response);
 }
 
 // Store FCM token upon user login
