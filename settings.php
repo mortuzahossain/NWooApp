@@ -27,20 +27,63 @@ if (file_exists($file_path)) {
 
 <div class="settings-tab">
     <h2>Settings</h2>
-    <form method="post" enctype="multipart/form-data">
-        <table class="form-table">
-            <tr>
-                <th scope="row"><label for="json_file">Upload JSON File</label></th>
-                <td>
-                    <input type="file" name="json_file" id="json_file" accept=".json" />
-                    <button type="submit" class="button button-primary">Upload</button>
-                </td>
-            </tr>
-        </table>
-    </form>
+    <div style="display: flex; gap: 20px; align-items: flex-start;">
+        <!-- Left Column: Send Notification -->
+        <div style="flex: 1;">
+            <form method="post" enctype="multipart/form-data">
+                <table class="form-table">
+                    <tr>
+                        <th scope="row"><label for="json_file">Upload JSON File</label></th>
+                        <td>
+                            <input type="file" name="json_file" id="json_file" accept=".json" />
+                            <button type="submit" class="button button-primary">Upload</button>
+                        </td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+    <div style="flex: 1; border-left: 1px solid #ccc; padding-left: 20px;">
+        <?php if (!empty($json_content)) : ?>
+            <h3>Uploaded JSON Content</h3>
+            <button id="toggleButton" style="margin-bottom: 10px;">Show JSON</button>
+            <pre id="jsonContent" style="background: #f5f5f5;
+                                         padding: 10px;
+                                         border: 1px solid #ddd;
+                                         white-space: pre-wrap;
+                                         word-wrap: break-word;
+                                         overflow-x: auto;">
+                <?php
+                $decoded_content = json_decode($json_content, true);
 
-    <?php if (!empty($json_content)) : ?>
-        <h3>Uploaded JSON Content</h3>
-        <pre style="background: #f5f5f5; padding: 10px; border: 1px solid #ddd;"><?php echo esc_html($json_content); ?></pre>
-    <?php endif; ?>
+                if (isset($decoded_content['private_key'])) {
+                       unset($decoded_content['private_key']);
+                   }
+
+                   // Encode the JSON content back to a string
+                   $json_content = json_encode($decoded_content, JSON_PRETTY_PRINT);
+                   echo esc_html($json_content); ?>
+                * NOT SHOWING THE private_key
+            </pre>
+
+
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const toggleButton = document.getElementById('toggleButton');
+                    const jsonContent = document.getElementById('jsonContent');
+
+                    toggleButton.addEventListener('click', function () {
+                        if (jsonContent.style.display === 'none') {
+                            jsonContent.style.display = 'block';
+                            toggleButton.textContent = 'Hide JSON';
+                        } else {
+                            jsonContent.style.display = 'none';
+                            toggleButton.textContent = 'Show JSON';
+                        }
+                    });
+                });
+            </script>
+        <?php endif; ?>
+    </div>
+
+    </div>
 </div>
