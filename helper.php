@@ -89,8 +89,8 @@ function sendFirebaseNotification($body)
 
     // Sending notification via cURL
     $resA = curl($API, $body, $header);
-logMe($body);
-logMe($resA);
+// logMe($body);
+// logMe($resA);
     if ($resA) {
         $obj = json_decode($resA);
         if (isset($obj->name)) {
