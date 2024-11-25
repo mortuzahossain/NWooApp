@@ -24,6 +24,7 @@ if (isset($_GET['remove_topic'])) {
 if (isset($_POST['send_notification'])) {
     $notification_topic = sanitize_text_field($_POST['notification_topic']);
     $notification_title = sanitize_text_field($_POST['notification_title']);
+    $notification_url = sanitize_text_field($_POST['notification_url']);
     $notification_message = sanitize_textarea_field($_POST['notification_message']);
     $file_path = CUSTOM_PLUGIN_DIR . 'uploads/uploaded.json';
     if (!file_exists($file_path)){
@@ -36,12 +37,14 @@ if (isset($_POST['send_notification'])) {
      			'message' => array(
     				'topic' => $notification_topic,
     				'notification' => array(
-   					'title' => $notification_title,
-   					'body' => $notification_message
+                        'title' => $notification_title,
+                        'body' => $notification_message
     				),
     				'data' => array(
-   					'title' => $notification_title,
-   					'body' => $notification_message
+                        'title' => $notification_title,
+                        'body' => $notification_message,
+                        'url' => $notification_url,
+                        'image_url' => $notification_url,
     				),
      			),
   		);
@@ -86,7 +89,6 @@ $saved_topics = get_option('push_notification_topics', []);
                         <td>
                             <select name="notification_topic" id="notification_topic" class="regular-text"  >
                                 <option value="">-- Select Topic --</option>
-                                <option value="all">All</option>
                                 <?php foreach ($saved_topics as $topic) : ?>
                                     <option value="<?php echo esc_attr($topic); ?>"><?php echo esc_html($topic); ?></option>
                                 <?php endforeach; ?>
@@ -98,7 +100,7 @@ $saved_topics = get_option('push_notification_topics', []);
                             <label for="notification_title">Notification Title</label>
                         </th>
                         <td>
-                            <input type="text" name="notification_title" id="notification_title" class="regular-text"  placeholder="Enter notification title"  >
+                            <input type="text" name="notification_title" id="notification_title" class="regular-text"  placeholder="Enter notification title"  required>
                         </td>
                     </tr>
                     <tr>
@@ -106,7 +108,15 @@ $saved_topics = get_option('push_notification_topics', []);
                             <label for="notification_message">Notification Message</label>
                         </th>
                         <td>
-                            <textarea name="notification_message" id="notification_message" class="large-text" rows="5" placeholder="Enter notification message"  ></textarea>
+                            <textarea name="notification_message" id="notification_message" class="large-text" rows="5" placeholder="Enter notification message"  required></textarea>
+                        </td>
+                    </tr>
+                     <tr>
+                        <th scope="row">
+                            <label for="notification_url">URL (Optional)</label>
+                        </th>
+                        <td>
+                            <input type="url" name="notification_url" id="notification_url" class="regular-text"  placeholder="Enter url that you want to navigate after click"  >
                         </td>
                     </tr>
                 </table>
@@ -145,7 +155,7 @@ $saved_topics = get_option('push_notification_topics', []);
                             <tr>
                                 <td><?php echo esc_html($topic); ?></td>
                                 <td>
-                                    <a href="?page=custom-plugin-tabs&tab=push-notification&remove_topic=<?php echo urlencode($topic); ?>" class="button button-link-delete" style="color: red;">Remove</a>
+                                    <a href="?page=nwooapp&tab=push-notification&remove_topic=<?php echo urlencode($topic); ?>" class="button button-link-delete" style="color: red;">Remove</a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

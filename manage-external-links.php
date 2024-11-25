@@ -77,7 +77,7 @@ $saved_links = file_exists($data_file) ? json_decode(file_get_contents($data_fil
                         <tr>
                             <td><a href="<?php echo esc_url($link); ?>" target="_blank"><?php echo esc_html($link); ?></a></td>
                             <td style="text-align: right;">
-                                <a href="?page=custom-plugin-tabs&tab=manage-external-link&remove_link=<?php echo $index; ?>" class="button button-link-delete" style="color: red;">Remove</a>
+                                <a href="?page=nwooapp&tab=manage-external-link&remove_link=<?php echo $index; ?>" class="button button-link-delete" style="color: red;">Remove</a>
                             </td>
                         </tr>
                     <?php endforeach; ?>
