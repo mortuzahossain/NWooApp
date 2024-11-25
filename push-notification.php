@@ -25,6 +25,7 @@ if (isset($_POST['send_notification'])) {
     $notification_topic = sanitize_text_field($_POST['notification_topic']);
     $notification_title = sanitize_text_field($_POST['notification_title']);
     $notification_url = sanitize_text_field($_POST['notification_url']);
+    $notification_image = sanitize_text_field($_POST['notification_image']);
     $notification_message = sanitize_textarea_field($_POST['notification_message']);
     $file_path = CUSTOM_PLUGIN_DIR . 'uploads/uploaded.json';
     if (!file_exists($file_path)){
@@ -43,8 +44,8 @@ if (isset($_POST['send_notification'])) {
     				'data' => array(
                         'title' => $notification_title,
                         'body' => $notification_message,
-                        'url' => $notification_url,
-                        'image_url' => $notification_url,
+                        'url' => isset($notification_url) && !empty($notification_url) ? $notification_url : null,
+                        'image_url' => isset($notification_image) && !empty($notification_image) ? $notification_image : null,
     				),
      			),
   		);
@@ -117,6 +118,16 @@ $saved_topics = get_option('push_notification_topics', []);
                         </th>
                         <td>
                             <input type="url" name="notification_url" id="notification_url" class="regular-text"  placeholder="Enter url that you want to navigate after click"  >
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">
+                            <label for="notification_image">Notification Image</label>
+                        </th>
+                        <td>
+                            <button type="button" id="upload_image_button" class="button">Select Image</button>
+                            <input type="hidden" name="notification_image" id="notification_image" value="">
+                            <img id="image_preview" src="" style="max-width: 100px; display: none; margin-top: 10px;" alt="Image Preview">
                         </td>
                     </tr>
                 </table>

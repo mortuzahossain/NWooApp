@@ -2,7 +2,7 @@
 /**
  * Plugin Name: NWooApp
  * Description: A plugin to make your wordpress app into natieve webview app with deeplinking & push notification
- * Version: 1.0
+ * Version: 1.0.1
  * Author: Md Mortuza Hossain
  * Requires Plugins: woocommerce
  */
@@ -87,3 +87,18 @@ function nwooapp_main_page() {
 function custom_plugin_get_active_tab($tab_name) {
     return isset($_GET['tab']) && $_GET['tab'] === $tab_name ? 'nav-tab-active' : '';
 }
+
+
+
+function nwooapp_enqueue_media_uploader($hook_suffix) {
+    
+    wp_enqueue_media();
+    wp_enqueue_script(
+        'nwooapp-media-uploader',
+        plugin_dir_url(__FILE__) . 'media-uploader.js', 
+        ['jquery'], // Dependencies
+        '1.0',
+        true
+    );
+}
+add_action('admin_enqueue_scripts', 'nwooapp_enqueue_media_uploader');
