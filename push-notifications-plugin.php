@@ -147,14 +147,32 @@ function wcn_get_notifications() {
     );
 
     // Mark notifications as seen when retrieved
-    $wpdb->query(
-        $wpdb->prepare("UPDATE $table_name SET status = 'read' WHERE user_id = %d AND status = 'unread'", $user_id)
-    );
+    // $wpdb->query(
+    //     $wpdb->prepare("UPDATE $table_name SET status = 'read' WHERE user_id = %d AND status = 'unread'", $user_id)
+    // );
 
     // Return JSON response
     wp_send_json($notifications);
 }
 add_action('wp_ajax_wcn_get_notifications', 'wcn_get_notifications');
+
+
+function wcn_update_notifications() {
+    if (!is_user_logged_in()) wp_die();
+
+    global $wpdb;
+    $user_id = get_current_user_id();
+    $table_name = $wpdb->prefix . 'nwooapp_user_notifications';
+    
+
+    $wpdb->query(
+        $wpdb->prepare("UPDATE $table_name SET status = 'read' WHERE user_id = %d AND status = 'unread'", $user_id)
+    ); 
+
+    
+    wp_send_json_success("mark message as read");
+}
+add_action('wp_ajax_wcn_update_notifications', 'wcn_update_notifications');
 
 
 // - SORTCODE
@@ -182,20 +200,40 @@ function wcn_notification_shortcode() {
         <span id="wcn-count" style="position:absolute;top:-5px;right:-5px;background:black;color:white;border-radius:50%;padding:3px 6px;font-size:12px;"></span>
     </div>
 
-    <div id="wcn-popup" style="display:none;position:absolute;top:40px;right:0;background:white;padding:10px;border:1px solid #ddd;box-shadow:0 0 10px rgba(0,0,0,0.1);">
+    <div id="wcn-popup" style="display:none;position:fixed;top:30%;left:50%;transform:translate(-50%, -50%);background:white;padding:20px;border:1px solid #ddd;box-shadow:0 0 10px rgba(0,0,0,0.1);z-index:1000;width:60%;max-width:600px;">
+        <button id="close-wcn" style="position:absolute;top:5px;right:5px;border:none;background:red;color:white;width:20px;height:20px;cursor:pointer;font-size:14px;">×</button>
         <ul id="wcn-list" style="list-style:none;padding:0;margin:0;"></ul>
     </div>
 
+    <style>
+        @media (max-width: 768px) { /* Tablet */
+            #wcn-popup {
+                width: 80%;
+            }
+        }
+        @media (max-width: 480px) { /* Mobile */
+            #wcn-popup {
+                width: 90%;
+            }
+        }
+    </style>
     <script>
-        function getOrderIcon(status) {
+       function getOrderIcon(status) {
             switch (status) {
                 case 'processing': return '🔄'; // Processing
                 case 'completed': return '✅'; // Completed
                 case 'cancelled': return '❌'; // Cancelled
                 case 'on-hold': return '⏳'; // On-Hold
+                case 'pending': return '⏱️'; // Pending
+                case 'refunded': return '💸'; // Refunded
+                case 'failed': return '❗'; // Failed
                 default: return '📦'; // Default
             }
         }
+
+        document.getElementById('close-wcn').addEventListener('click', function() {
+            document.getElementById('wcn-popup').style.display = 'none';
+        });
 
         function fetchNotifications() {
             fetch('<?php echo admin_url('admin-ajax.php'); ?>?action=wcn_get_notifications')
@@ -217,19 +255,86 @@ function wcn_notification_shortcode() {
                         list.innerHTML = '<li>No notifications</li>';
                     }
 
-                    data.forEach(notif => {
+                    data.forEach((notif, index) => {
                         let li = document.createElement('li');
-                        li.style.padding = '5px 0';
-                        li.innerHTML = `${getOrderIcon(notif.order_status)} <strong>${notif.message}</strong> <br> <small>${notif.created_at}</small>`;
+                        li.style.display = 'flex';
+                        li.style.alignItems = 'center';
+                        li.style.gap = '15px';
+                        li.style.padding = '10px 0';
+
+                        // Icon container with circle background
+                        let iconContainer = document.createElement('div');
+                        iconContainer.style.width = '40px';
+                        iconContainer.style.height = '40px';
+                        iconContainer.style.borderRadius = '50%';
+                        iconContainer.style.backgroundColor = '#f0f0f0'; // Light gray background
+                        iconContainer.style.display = 'flex';
+                        iconContainer.style.justifyContent = 'center';
+                        iconContainer.style.alignItems = 'center';
+                        iconContainer.style.flexShrink = '0';
+
+                        let icon = document.createElement('span');
+                        icon.innerText = getOrderIcon(notif.order_status); // Get emoji based on order status
+                        icon.style.fontSize = '20px'; // Adjust emoji size here
+
+
+                        iconContainer.appendChild(icon);
+
+                        // Text container
+                        let textContainer = document.createElement('div');
+                        textContainer.style.display = 'flex';
+                        textContainer.style.flexDirection = 'column';
+
+                        // Format the date as "time ago"
+                        let formattedDate = timeAgo(notif.created_at);
+                        let dateElement = document.createElement('small');
+                        dateElement.style.color = '#888';
+                        dateElement.style.marginBottom = '4px';
+                        dateElement.innerText = formattedDate;
+
+                        let messageElement = document.createElement('strong');
+                        messageElement.innerText = notif.message;
+
+                        textContainer.appendChild(dateElement);
+                        textContainer.appendChild(messageElement);
+
+                        li.appendChild(iconContainer);
+                        li.appendChild(textContainer);
                         list.appendChild(li);
+
+                        // Add HR only if it's not the last item
+                        if (index !== data.length - 1) {
+                            let hr = document.createElement('hr');
+                            hr.style.border = '0';
+                            hr.style.borderTop = '1px solid #ddd';
+                            hr.style.margin = '5px 0';
+                            list.appendChild(hr);
+                        }
                     });
                 });
+        }
+
+        function updateNotifications() {
+             fetch('<?php echo admin_url('admin-ajax.php'); ?>?action=wcn_update_notifications')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('wcn-count').style.display = "none";
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+
         }
 
         document.getElementById('wcn-notification').addEventListener('click', function() {
             let popup = document.getElementById('wcn-popup');
             popup.style.display = popup.style.display === 'block' ? 'none' : 'block';
-            fetchNotifications();
+            // fetchNotifications();
+            console.log("Checking");
+            
+            updateNotifications();
         });
 
         document.addEventListener('click', function(event) {
@@ -238,6 +343,26 @@ function wcn_notification_shortcode() {
                 document.getElementById('wcn-popup').style.display = 'none';
             }
         });
+
+        function timeAgo(dateString) {
+            let date = new Date(dateString);
+            let seconds = Math.floor((new Date() - date) / 1000);
+            let intervals = {
+                year: 31536000,
+                month: 2592000,
+                day: 86400,
+                hour: 3600,
+                minute: 60
+            };
+
+            for (let [unit, value] of Object.entries(intervals)) {
+                let count = Math.floor(seconds / value);
+                if (count > 0) {
+                    return `${count} ${unit}${count > 1 ? 's' : ''} ago`;
+                }
+            }
+            return 'Just now';
+        }
 
         fetchNotifications(); // Fetch notifications on page load
     </script>
