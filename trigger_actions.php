@@ -61,13 +61,24 @@ function send_push_notification_on_order_status_change($order_id, $old_status, $
             $message = "Your order #{$order_id} status has changed to {$new_status}.";
         }
     } else {
-        $message = "dscascda: $new_status" . $messages[$new_status];
+        $message = "$new_status" . $messages[$new_status];
     }
+
+
+
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'nwooapp_user_notifications';
+    $wpdb->insert($table_name, [
+        'user_id' => $user_id,
+        'message' => $message,
+        'order_status' => $new_status,
+        'status' => 'unread',
+    ]);
 
     if ($fcm_token && $message != "") {
         send_fcm_push_notification($fcm_token, $message);
-    }
-    send_fcm_push_notification("empty token", $message);
+    } 
+    // send_fcm_push_notification("empty token", $message);
 }
 
 
